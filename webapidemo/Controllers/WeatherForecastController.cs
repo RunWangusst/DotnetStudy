@@ -20,7 +20,8 @@ namespace webapidemo.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        [Authorize]   // 接口访问启用 jwt 认证
+        [Authorize(Roles = "testUser")]   // 接口访问启用 jwt 认证, 给API增加认证的角色要求，其中 "testUser" 对应角色的名称
+        // 角色对应到 token 生成时的 Claims 中指定的角色
         public IEnumerable<WeatherForecast> Get()
         {
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
