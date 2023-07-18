@@ -6,6 +6,7 @@ using System.Configuration;
 using webapidemo.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.IdentityModel.Logging;
 
 namespace webapidemo
 {
@@ -86,6 +87,7 @@ namespace webapidemo
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Demo v1");
                 });
+                IdentityModelEventSource.ShowPII = true;
             }
 
             app.UseHttpsRedirection();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using System.IdentityModel.Tokens.Jwt;
@@ -24,21 +25,59 @@ namespace webapidemo.Controllers
 
         }
 
-        [HttpPost, Route("/requesttoken")]
-        public ActionResult RequestToken([FromBody] LoginRequestDTO loginRequestDTO)
+        [HttpPost, Route("/requestToken")]
+        public ActionResult RequestToken([FromBody] LoginRequestDTO request)
         {
 
-            if (loginRequestDTO == null || loginRequestDTO.userName == null && loginRequestDTO.password == null)
+            if (request == null || request.userName == null && request.password == null)
             {
                 return BadRequest("Invalid Request.");
             }
 
             // 生成 token 和 refreshtoken
-            var token = GenUserToken(loginRequestDTO.userName, "testUser");
+            var token = GenUserToken(request.userName, "testUser");
 
-            var refreshToken = GenUserToken(loginRequestDTO.userName, "testUser");
+            var refreshToken = GenUserToken(request.userName, "testUser");
 
             return Ok(new[] { token, refreshToken });
+        }
+
+        [HttpPost, Route("/refreshToken")]
+        [Authorize]
+        public ActionResult RefreshToken([FromBody] RefreshTokenDTO request)
+        {
+            if (request == null)
+                return BadRequest("invalid request.");
+            if (request.Token == null && request.RefreshToken == null)
+            {
+                return BadRequest("Invalid request");
+            }
+
+            // 这里是验证token的代码
+            var handler = new JwtSecurityTokenHandler();
+
+            try
+            {
+                ClaimsPrincipal claim = handler.ValidateToken(request.Token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_tokenParameter.Secret)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                }, out SecurityToken securityToken);
+
+                var username = claim.Identity.Name;
+
+                // 这里是生成 token 的代码
+                var token = GenUserToken(username, "testUser");
+                var refreshToken = GenUserToken(username, "wr");
+                return Ok(new[] { token, refreshToken });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Invalid request {ex.Message}");
+            }
         }
 
         private string GenUserToken(string username, string role)
