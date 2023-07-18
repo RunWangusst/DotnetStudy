@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace webapidemo.Controllers
@@ -19,6 +20,7 @@ namespace webapidemo.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
+        [Authorize]   // 接口访问启用 jwt 认证
         public IEnumerable<WeatherForecast> Get()
         {
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast

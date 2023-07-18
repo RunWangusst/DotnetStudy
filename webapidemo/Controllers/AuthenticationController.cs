@@ -36,7 +36,7 @@ namespace webapidemo.Controllers
             // 生成 token 和 refreshtoken
             var token = GenUserToken(loginRequestDTO.userName, "testUser");
 
-            var refreshToken = GenUserToken(loginRequestDTO.userName, "wr");
+            var refreshToken = GenUserToken(loginRequestDTO.userName, "testUser");
 
             return Ok(new[] { token, refreshToken });
         }
